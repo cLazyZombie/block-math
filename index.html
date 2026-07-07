@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>블록 수 놀이터</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔢</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <section id="scene-title" class="scene active" aria-labelledby="title-heading">
+    <img class="title-bg" src="images/start-background.png" alt="">
+    <div class="title-shade" aria-hidden="true"></div>
+    <div class="title-content">
+      <h1 id="title-heading" class="logo" aria-label="블록 수 놀이터">
+        <span class="logo-tile c1">블</span>
+        <span class="logo-tile c2">록</span>
+        <span class="logo-gap"></span>
+        <span class="logo-tile c3">수</span>
+        <span class="logo-gap"></span>
+        <span class="logo-tile c4">놀</span>
+        <span class="logo-tile c5">이</span>
+        <span class="logo-tile c8">터</span>
+      </h1>
+      <p class="subtitle">블록을 보고 숫자를 맞혀요</p>
+      <button id="btn-start" class="start-btn" type="button">시작</button>
+    </div>
+  </section>
+
+  <section id="scene-game" class="scene" aria-labelledby="game-title">
+    <header class="game-top">
+      <button id="btn-home" class="round-btn" type="button" aria-label="처음 화면으로">
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+          <path d="M3 11.5 12 4l9 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M6.4 10.4v8.2h11.2v-8.2" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <h2 id="game-title" class="game-title">블록 수 놀이터</h2>
+      <button id="btn-sound" class="round-btn" type="button" aria-label="숫자 다시 듣기">
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+          <path d="M4 14.5V9.5h4.2L13 5.8v12.4l-4.8-3.7H4Z" fill="currentColor"/>
+          <path d="M16 8.5c1.1 1 1.7 2.1 1.7 3.5S17.1 14.5 16 15.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M18.2 6.2c1.9 1.6 2.8 3.6 2.8 5.8s-.9 4.2-2.8 5.8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <main class="game-main">
+      <div id="block-stage" class="block-stage" aria-label="숫자 블록"></div>
+      <div id="answer-slots" class="answer-slots" aria-label="정답 입력 칸"></div>
+      <div id="keypad" class="keypad" aria-label="숫자 버튼"></div>
+    </main>
+
+    <div id="praise" class="praise hidden" role="status" aria-live="polite">
+      <div class="praise-title">참 잘했어요!</div>
+      <div id="praise-number" class="praise-number"></div>
+      <button id="btn-next" class="next-btn" type="button">
+        다음
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+          <path d="M13 5.6 20.4 12 13 18.4 V14.2 H3.6v-4.4H13Z" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
