@@ -39,6 +39,10 @@ let currentAudio = null;
 let currentNumber = 0;
 let lastNumber = 0;
 let filledDigits = [];
+let inputLocked = false;
+let ghost = null;
+let touchDigit = null;
+let touchStart = null;
 
 const stage = document.getElementById('block-stage');
 const slots = document.getElementById('answer-slots');
@@ -183,16 +187,18 @@ function renderOnes(count, digit) {
   return group;
 }
 
-function renderTenPack(tensDigit) {
+function renderTenPack(tensDigit, packIndex, packCount, hasOnes) {
   const palette = digitColors[tensDigit || 1];
   const pack = document.createElement('div');
   pack.className = 'ten-pack';
   pack.style.setProperty('--pack-bg', tensDigit === 1 ? '#fffdf8' : palette.soft);
   pack.style.setProperty('--pack-border', palette.border);
   for (let i = 0; i < 10; i += 1) {
-    const mini = document.createElement('div');
-    mini.className = 'mini';
-    pack.appendChild(mini);
+    const cell = makeUnit(tensDigit === 1 ? '#fffdf8' : palette.soft, i, 10);
+    cell.classList.add('ten-unit');
+    cell.style.setProperty('--block-color', tensDigit === 1 ? '#fffdf8' : palette.soft);
+    if (hasOnes || packIndex !== packCount - 1 || i !== 9) cell.classList.remove('face');
+    pack.appendChild(cell);
   }
   return pack;
 }
@@ -225,7 +231,7 @@ function renderBlocks(n) {
   }
 
   for (let i = 0; i < tens; i += 1) {
-    stage.appendChild(renderTenPack(tens));
+    stage.appendChild(renderTenPack(tens, i, tens, ones > 0));
   }
   if (ones > 0) stage.appendChild(renderOnes(ones, ones));
 }
@@ -233,10 +239,13 @@ function renderBlocks(n) {
 function renderSlots() {
   filledDigits = Array.from(String(currentNumber), () => '');
   slots.innerHTML = '';
+  const expectedDigits = Array.from(String(currentNumber));
   filledDigits.forEach((_, index) => {
     const slot = document.createElement('button');
     slot.type = 'button';
     slot.className = 'slot';
+    slot.dataset.index = String(index);
+    slot.dataset.digit = expectedDigits[index];
     slot.setAttribute('aria-label', `${index + 1}번째 자리`);
     slot.addEventListener('click', () => clearFrom(index));
     slots.appendChild(slot);
@@ -251,10 +260,49 @@ function renderKeypad() {
     button.type = 'button';
     button.className = 'digit-btn';
     button.textContent = digit;
+    button.dataset.digit = digit;
+    button.id = `digit-${digit}`;
+    button.draggable = true;
     button.style.setProperty('--key-color', palette.color);
     button.style.setProperty('--key-shadow', palette.shadow);
-    button.addEventListener('click', () => pressDigit(digit));
+    attachDigitEvents(button);
     keypad.appendChild(button);
+  });
+}
+
+function attachDigitEvents(button) {
+  button.addEventListener('click', () => speak(digitSpeech[button.dataset.digit]));
+  button.addEventListener('dragstart', (event) => {
+    event.dataTransfer.setData('text/plain', button.dataset.digit);
+    event.dataTransfer.effectAllowed = 'copy';
+    button.classList.add('dragging');
+  });
+  button.addEventListener('dragend', () => button.classList.remove('dragging', 'shake'));
+  button.addEventListener('touchstart', (event) => onTouchStart(event, button), { passive: false });
+}
+
+function setupSlotDropZone() {
+  slots.addEventListener('dragover', (event) => {
+    const slot = event.target.closest('.slot');
+    if (!slot || slot.classList.contains('filled') || inputLocked) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+    slot.classList.add('hover');
+  });
+
+  slots.addEventListener('dragleave', (event) => {
+    const slot = event.target.closest('.slot');
+    if (slot) slot.classList.remove('hover');
+  });
+
+  slots.addEventListener('drop', (event) => {
+    event.preventDefault();
+    const slot = event.target.closest('.slot');
+    if (!slot) return;
+    slot.classList.remove('hover');
+    const digit = event.dataTransfer.getData('text/plain');
+    const tile = document.querySelector(`.digit-btn[data-digit="${CSS.escape(digit)}"]`);
+    judgeDrop(digit, slot, tile);
   });
 }
 
@@ -273,39 +321,43 @@ function updateSlots() {
 }
 
 function clearFrom(index) {
+  if (inputLocked) return;
   if (!filledDigits[index]) return;
   filledDigits = filledDigits.map((digit, i) => (i >= index ? '' : digit));
   updateSlots();
 }
 
-function pressDigit(digit) {
-  const nextIndex = filledDigits.findIndex((value) => value === '');
-  if (nextIndex === -1) return;
-  filledDigits[nextIndex] = digit;
+function judgeDrop(digit, slot, tile) {
+  if (inputLocked || !digit || !slot || slot.classList.contains('filled')) return;
+  const index = Number(slot.dataset.index);
+  if (digit !== slot.dataset.digit) {
+    flashWrong(tile, slot);
+    speak('다시 해볼까?');
+    return;
+  }
+
+  filledDigits[index] = digit;
   updateSlots();
   speak(digitSpeech[digit]);
   if (filledDigits.every(Boolean)) {
-    setTimeout(checkAnswer, 120);
+    inputLocked = true;
+    setTimeout(completeQuestion, 1000);
   }
 }
 
-function checkAnswer() {
-  const answer = filledDigits.join('');
-  if (Number(answer) === currentNumber) {
-    completeQuestion();
-    return;
-  }
-  slots.classList.add('wrong');
-  speak('다시 해볼까?');
+function flashWrong(tile, slot) {
+  tile?.classList.add('shake');
+  slot.classList.add('wrong-flash');
   setTimeout(() => {
-    slots.classList.remove('wrong');
-    filledDigits = filledDigits.map(() => '');
-    updateSlots();
-  }, 720);
+    tile?.classList.remove('shake');
+    slot.classList.remove('wrong-flash');
+  }, 520);
 }
 
 function startQuestion(number = pickNumber()) {
   currentNumber = number;
+  inputLocked = false;
+  cleanupDrag();
   praise.classList.add('hidden');
   renderBlocks(currentNumber);
   renderSlots();
@@ -319,6 +371,86 @@ function completeQuestion() {
   praise.classList.remove('hidden');
   launchConfetti();
   setTimeout(() => speak(`참 잘했어요! ${spoken}!`), 220);
+}
+
+function cleanupDrag() {
+  document.querySelectorAll('.digit-ghost').forEach((el) => el.remove());
+  document.querySelectorAll('.slot.hover').forEach((el) => el.classList.remove('hover'));
+  document.querySelectorAll('.digit-btn.dragging').forEach((el) => el.classList.remove('dragging'));
+  ghost = null;
+  touchDigit = null;
+  touchStart = null;
+}
+
+function onTouchStart(event, tile) {
+  if (inputLocked || touchDigit) return;
+  event.preventDefault();
+  const touch = event.touches[0];
+  touchDigit = tile;
+  touchStart = { x: touch.clientX, y: touch.clientY, id: touch.identifier };
+  ghost = tile.cloneNode(true);
+  ghost.classList.add('digit-ghost');
+  ghost.removeAttribute('id');
+  document.body.appendChild(ghost);
+  tile.classList.add('dragging');
+  moveGhost(touch);
+
+  document.addEventListener('touchmove', onTouchMove, { passive: false });
+  document.addEventListener('touchend', onTouchEnd);
+  document.addEventListener('touchcancel', onTouchEnd);
+}
+
+function moveGhost(touch) {
+  if (!ghost) return;
+  ghost.style.left = `${touch.clientX}px`;
+  ghost.style.top = `${touch.clientY}px`;
+}
+
+function trackedTouch(list) {
+  if (!touchStart) return null;
+  return Array.from(list).find((touch) => touch.identifier === touchStart.id) || null;
+}
+
+function slotUnderPoint(touch) {
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  return el ? el.closest('.slot') : null;
+}
+
+function onTouchMove(event) {
+  event.preventDefault();
+  const touch = trackedTouch(event.touches);
+  if (!touch) return;
+  moveGhost(touch);
+  document.querySelectorAll('.slot.hover').forEach((slot) => slot.classList.remove('hover'));
+  const slot = slotUnderPoint(touch);
+  if (slot && !slot.classList.contains('filled')) slot.classList.add('hover');
+}
+
+function onTouchEnd(event) {
+  const touch = trackedTouch(event.changedTouches);
+  if (!touch) return;
+
+  document.removeEventListener('touchmove', onTouchMove);
+  document.removeEventListener('touchend', onTouchEnd);
+  document.removeEventListener('touchcancel', onTouchEnd);
+
+  const slot = slotUnderPoint(touch);
+  document.querySelectorAll('.slot.hover').forEach((el) => el.classList.remove('hover'));
+
+  if (ghost) {
+    ghost.remove();
+    ghost = null;
+  }
+  if (touchDigit) {
+    touchDigit.classList.remove('dragging');
+    if (slot) {
+      judgeDrop(touchDigit.dataset.digit, slot, touchDigit);
+    } else if (touchStart && Math.hypot(touch.clientX - touchStart.x, touch.clientY - touchStart.y) < 12) {
+      speak(digitSpeech[touchDigit.dataset.digit]);
+    }
+    touchDigit = null;
+    touchStart = null;
+  }
 }
 
 function resizeConfetti() {
@@ -391,6 +523,7 @@ async function init() {
   document.getElementById('btn-next').addEventListener('click', () => {
     startQuestion();
   });
+  setupSlotDropZone();
   window.addEventListener('resize', resizeConfetti);
 
   window.__BLOCK_MATH__ = {
@@ -398,10 +531,10 @@ async function init() {
     numberToKorean,
     getCurrentNumber: () => currentNumber,
     fill: (digits) => {
-      filledDigits = String(digits).slice(0, String(currentNumber).length).split('');
-      while (filledDigits.length < String(currentNumber).length) filledDigits.push('');
-      updateSlots();
-      if (filledDigits.every(Boolean)) checkAnswer();
+      Array.from(String(digits)).forEach((digit, index) => {
+        const slot = slots.children[index];
+        if (slot) judgeDrop(digit, slot, document.querySelector(`.digit-btn[data-digit="${CSS.escape(digit)}"]`));
+      });
     },
   };
 }

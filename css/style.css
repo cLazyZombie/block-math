@@ -226,7 +226,8 @@ button:focus-visible {
 }
 
 .block-stage.many {
-  --mini-size: clamp(11px, 1.85vmin, 18px);
+  --block-size: clamp(24px, 4.4vmin, 42px);
+  gap: clamp(0.28rem, 1vmin, 0.55rem);
 }
 
 .number-stack,
@@ -247,7 +248,6 @@ button:focus-visible {
 }
 
 .unit,
-.mini,
 .hundred-cell {
   position: relative;
   border-radius: 24%;
@@ -291,19 +291,19 @@ button:focus-visible {
 
 .ten-pack {
   display: grid;
-  grid-template-columns: repeat(2, var(--mini-size));
-  grid-template-rows: repeat(5, var(--mini-size));
-  gap: max(3px, calc(var(--mini-size) * 0.16));
-  padding: max(5px, calc(var(--mini-size) * 0.22));
-  border-radius: 16px;
-  border: max(3px, calc(var(--mini-size) * 0.18)) solid var(--pack-border);
+  grid-template-columns: repeat(2, var(--block-size));
+  grid-template-rows: repeat(5, var(--block-size));
+  gap: clamp(4px, 0.8vmin, 7px);
+  padding: clamp(5px, 0.8vmin, 8px);
+  border-radius: clamp(16px, 2.5vmin, 26px);
+  border: clamp(4px, 0.8vmin, 7px) solid var(--pack-border);
   background: var(--pack-bg);
   box-shadow: var(--shadow);
 }
 
-.mini {
-  width: var(--mini-size);
-  height: var(--mini-size);
+.ten-unit {
+  width: var(--block-size);
+  height: var(--block-size);
   background: var(--pack-bg);
 }
 
@@ -350,6 +350,18 @@ button:focus-visible {
   animation: pop 0.26s ease;
 }
 
+.slot.hover {
+  border-color: #5fce67;
+  background: rgba(236, 255, 236, 0.84);
+  transform: scale(1.05);
+}
+
+.slot.wrong-flash {
+  animation: shake 0.42s ease;
+  border-color: #f94f59;
+  background: rgba(255, 220, 224, 0.92);
+}
+
 .answer-slots.wrong .slot {
   animation: shake 0.42s ease;
   border-color: #f94f59;
@@ -372,11 +384,36 @@ button:focus-visible {
   line-height: 1;
   text-shadow: 0 3px 0 rgba(87, 70, 63, 0.22);
   box-shadow: 0 7px 0 var(--key-shadow), 0 12px 20px rgba(87, 70, 63, 0.13);
+  touch-action: none;
 }
 
-.digit-btn:active {
+.digit-btn:active,
+.digit-btn.dragging {
   transform: translateY(5px);
   box-shadow: 0 2px 0 var(--key-shadow);
+  opacity: 0.7;
+}
+
+.digit-btn.shake {
+  animation: shake 0.42s ease;
+}
+
+.digit-ghost {
+  position: fixed;
+  z-index: 10;
+  width: clamp(4rem, 12vmin, 5.6rem);
+  height: clamp(4rem, 12vmin, 5.6rem);
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  color: #fff;
+  font-size: clamp(2.4rem, 8vmin, 4.2rem);
+  line-height: 1;
+  text-shadow: 0 3px 0 rgba(87, 70, 63, 0.22);
+  box-shadow: 0 10px 24px rgba(87, 70, 63, 0.2);
+  opacity: 0.9;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1.02);
 }
 
 .praise {
@@ -483,6 +520,10 @@ button:focus-visible {
     width: calc(100vw - 1rem);
     border-radius: 20px;
     padding: 0.5rem;
+  }
+
+  .block-stage.many {
+    --block-size: clamp(17px, 5vw, 27px);
   }
 
   .keypad {

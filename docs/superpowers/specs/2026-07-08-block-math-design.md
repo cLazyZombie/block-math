@@ -2,13 +2,13 @@
 
 ## Goal
 
-Build a static preschool number-recognition game inspired by colorful block-number learning. The child sees a stack of blocks representing a random number from 1 to 100, then fills digit blanks with reusable number buttons.
+Build a static preschool number-recognition game inspired by colorful block-number learning. The child sees a stack of blocks representing a random number from 1 to 100, then drags reusable digit tiles into matching blanks.
 
 ## Scope
 
 - Static hosting only: plain HTML, CSS, JavaScript, local assets, and GitHub Pages-compatible paths.
 - First screen with a generated cozy classroom/block-playground background and a large start button to unlock audio.
-- Game screen with a block figure on top, digit blanks below it, and large reusable digit buttons `1` through `0`.
+- Game screen with a block figure on top, digit blanks below it, and large reusable digit tiles `1` through `0`.
 - Random questions from 1 to 100, avoiding immediate repeats when possible.
 - Correct answers trigger confetti, a praise state, and Korean Sino-number reading through Edge TTS MP3 first, then Web Speech API fallback.
 - Number-block art should preserve the recognizable digit color cue: red 1, orange 2, yellow 3, green 4, cyan/blue 5, indigo 6, rainbow 7, magenta 8, grey 9, and base-ten group styling.
@@ -21,10 +21,10 @@ Build a static preschool number-recognition game inspired by colorful block-numb
    - `1` to `9`: individual colored block stacks.
    - `10` to `99`: tens shown as 10-block packs, ones shown as individual blocks.
    - `100`: one 10-by-10 hundred board.
-3. The child taps digit buttons to fill the blank slots. Buttons do not disappear, so repeated digits work.
-4. Blank slots can be tapped to clear from that position.
-5. Wrong full answers shake and clear.
-6. Correct full answers show praise and a next button.
+3. The child drags digit tiles into blank slots. Tiles do not disappear, so repeated digits work.
+4. A slot accepts only its matching digit. Wrong drops shake and do not fill the slot.
+5. Blank slots can be tapped to clear from that position.
+6. Correct full answers stay visible for 1 second before praise and a next button appear.
 
 ## Audio
 
@@ -41,6 +41,7 @@ Run with an HTTP server because static audio and JSON are fetched. Verify:
 - First screen renders with the generated background.
 - Desktop and mobile layouts fit without overlap.
 - Blocks render for small numbers, two-digit numbers, and `100`.
-- Reusable digit buttons allow repeated digits.
-- Correct answer triggers praise, confetti, and audio.
-- Wrong answer shakes and resets.
+- Ten-block groups use full block cells rather than miniature cells.
+- Reusable digit tiles allow repeated digits.
+- Wrong drops do not fill slots.
+- Correct answer waits 1 second, then triggers praise, confetti, and audio.
