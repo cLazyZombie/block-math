@@ -371,15 +371,19 @@ button:focus-visible {
 }
 
 .keypad {
-  width: min(96vw, 760px);
+  --digit-size: clamp(3.75rem, 12vmin, 5.6rem);
+  --digit-gap: clamp(0.45rem, 1.4vmin, 0.78rem);
+  width: min(96vw, calc((var(--digit-size) * 5) + (var(--digit-gap) * 4)));
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: clamp(0.45rem, 1.4vmin, 0.78rem);
+  grid-template-columns: repeat(5, var(--digit-size));
+  justify-content: center;
+  gap: var(--digit-gap);
 }
 
 .digit-btn {
   min-width: 0;
-  height: clamp(3.85rem, 12vmin, 5.55rem);
+  width: var(--digit-size);
+  height: var(--digit-size);
   border-radius: 20px;
   background: var(--key-color);
   color: #fff;
@@ -404,8 +408,8 @@ button:focus-visible {
 .digit-ghost {
   position: fixed;
   z-index: 10;
-  width: clamp(4rem, 12vmin, 5.6rem);
-  height: clamp(4rem, 12vmin, 5.6rem);
+  width: var(--digit-size, clamp(3.75rem, 12vmin, 5.6rem));
+  height: var(--digit-size, clamp(3.75rem, 12vmin, 5.6rem));
   display: grid;
   place-items: center;
   border-radius: 20px;
@@ -533,7 +537,8 @@ button:focus-visible {
   }
 
   .keypad {
-    gap: 0.42rem;
+    --digit-size: clamp(3.25rem, 17vw, 3.8rem);
+    --digit-gap: 0.42rem;
   }
 
   .digit-btn {
@@ -570,5 +575,9 @@ button:focus-visible {
   .digit-btn {
     height: 3.35rem;
     font-size: 2.2rem;
+  }
+
+  .keypad {
+    --digit-size: 3.35rem;
   }
 }

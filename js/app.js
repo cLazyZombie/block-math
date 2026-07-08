@@ -70,6 +70,15 @@ function numberToKorean(n) {
   return parts.join(' ');
 }
 
+function placedDigitSpeech(digit, slotIndex, slotCount) {
+  if (digit === '0') return digitSpeech[digit];
+
+  const place = slotCount - slotIndex - 1;
+  if (place === 2) return digit === '1' ? '백' : `${digitSpeech[digit]}백`;
+  if (place === 1) return digit === '1' ? '십' : `${digitSpeech[digit]}십`;
+  return digitSpeech[digit];
+}
+
 function pickNumber() {
   if (MAX_NUMBER === MIN_NUMBER) return MIN_NUMBER;
   let next = lastNumber;
@@ -284,7 +293,6 @@ function renderKeypad() {
 }
 
 function attachDigitEvents(button) {
-  button.addEventListener('click', () => speak(digitSpeech[button.dataset.digit]));
   button.addEventListener('dragstart', (event) => {
     event.dataTransfer.setData('text/plain', button.dataset.digit);
     event.dataTransfer.effectAllowed = 'copy';
@@ -351,7 +359,7 @@ function judgeDrop(digit, slot, tile) {
 
   filledDigits[index] = digit;
   updateSlots();
-  speak(digitSpeech[digit]);
+  speak(placedDigitSpeech(digit, index, filledDigits.length));
   if (filledDigits.every(Boolean)) {
     inputLocked = true;
     setTimeout(completeQuestion, 1000);
@@ -402,6 +410,9 @@ function onTouchStart(event, tile) {
   touchDigit = tile;
   touchStart = { x: touch.clientX, y: touch.clientY, id: touch.identifier };
   ghost = tile.cloneNode(true);
+  const tileRect = tile.getBoundingClientRect();
+  ghost.style.width = `${tileRect.width}px`;
+  ghost.style.height = `${tileRect.height}px`;
   ghost.classList.add('digit-ghost');
   ghost.removeAttribute('id');
   document.body.appendChild(ghost);
@@ -458,8 +469,6 @@ function onTouchEnd(event) {
     touchDigit.classList.remove('dragging');
     if (slot) {
       judgeDrop(touchDigit.dataset.digit, slot, touchDigit);
-    } else if (touchStart && Math.hypot(touch.clientX - touchStart.x, touch.clientY - touchStart.y) < 12) {
-      speak(digitSpeech[touchDigit.dataset.digit]);
     }
     touchDigit = null;
     touchStart = null;
