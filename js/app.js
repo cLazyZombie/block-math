@@ -159,81 +159,60 @@ function makeUnit(color, index, total) {
   return unit;
 }
 
-function onesLayout(count) {
-  if (count <= 3) return { cols: 1, rows: count, positions: Array.from({ length: count }, (_, i) => [0, count - 1 - i]) };
-  if (count === 4) return { cols: 2, rows: 2, positions: [[0, 1], [1, 1], [0, 0], [1, 0]] };
-  if (count === 5) return { cols: 2, rows: 3, positions: [[0, 2], [1, 2], [0, 1], [1, 1], [0, 0]] };
-  if (count === 6) return { cols: 2, rows: 3, positions: [[0, 2], [1, 2], [0, 1], [1, 1], [0, 0], [1, 0]] };
-  if (count === 7) return { cols: 2, rows: 4, positions: [[0, 3], [1, 3], [0, 2], [1, 2], [0, 1], [1, 1], [0, 0]] };
-  if (count === 8) return { cols: 2, rows: 4, positions: [[0, 3], [1, 3], [0, 2], [1, 2], [0, 1], [1, 1], [0, 0], [1, 0]] };
-  return { cols: 3, rows: 3, positions: [[0, 2], [1, 2], [2, 2], [0, 1], [1, 1], [2, 1], [0, 0], [1, 0], [2, 0]] };
+function bodyColumns(count) {
+  if (count <= 3) return 1;
+  if (count <= 6) return 2;
+  if (count <= 12) return 3;
+  if (count <= 20) return 4;
+  if (count <= 30) return 5;
+  if (count <= 42) return 7;
+  if (count <= 56) return 8;
+  if (count <= 72) return 9;
+  return 10;
 }
 
-function renderOnes(count, digit) {
-  const layout = onesLayout(count);
-  const group = document.createElement('div');
-  group.className = 'ones-group';
-  group.style.setProperty('--cols', String(layout.cols));
-  group.style.setProperty('--rows', String(layout.rows));
-  const palette = digitColors[digit];
+function cellColorFor(index, count) {
+  if (count === 100) return index % 2 === 0 ? '#fffdf8' : digitColors[1].soft;
+  if (count < 10) {
+    const palette = digitColors[count];
+    return palette.rainbow ? rainbowColors[index % rainbowColors.length] : palette.color;
+  }
 
-  layout.positions.forEach(([col, row], index) => {
-    const color = palette.rainbow ? rainbowColors[index % rainbowColors.length] : palette.color;
-    const unit = makeUnit(color, index, count);
+  const tens = Math.floor(count / 10);
+  const ones = count % 10;
+  if (ones > 0 && index >= count - ones) {
+    const palette = digitColors[ones];
+    return palette.rainbow ? rainbowColors[(index - (count - ones)) % rainbowColors.length] : palette.color;
+  }
+  return tens === 1 ? '#fffdf8' : digitColors[tens].soft;
+}
+
+function renderNumberBody(count) {
+  const cols = bodyColumns(count);
+  const rows = Math.ceil(count / cols);
+  const edgeDigit = count === 100 ? 1 : (count % 10 || Math.floor(count / 10) || count);
+  const body = document.createElement('div');
+  body.className = 'number-body';
+  body.style.setProperty('--body-cols', String(cols));
+  body.style.setProperty('--body-rows', String(rows));
+  body.style.setProperty('--body-border', digitColors[edgeDigit].border);
+
+  for (let i = 0; i < count; i += 1) {
+    const unit = makeUnit(cellColorFor(i, count), i, count);
+    unit.classList.add('body-unit');
+    const rowFromBottom = Math.floor(i / cols);
+    const col = i % cols;
     unit.style.gridColumn = String(col + 1);
-    unit.style.gridRow = String(row + 1);
-    group.appendChild(unit);
-  });
-  return group;
-}
-
-function renderTenPack(tensDigit, packIndex, packCount, hasOnes) {
-  const palette = digitColors[tensDigit || 1];
-  const pack = document.createElement('div');
-  pack.className = 'ten-pack';
-  pack.style.setProperty('--pack-bg', tensDigit === 1 ? '#fffdf8' : palette.soft);
-  pack.style.setProperty('--pack-border', palette.border);
-  for (let i = 0; i < 10; i += 1) {
-    const cell = makeUnit(tensDigit === 1 ? '#fffdf8' : palette.soft, i, 10);
-    cell.classList.add('ten-unit');
-    cell.style.setProperty('--block-color', tensDigit === 1 ? '#fffdf8' : palette.soft);
-    if (hasOnes || packIndex !== packCount - 1 || i !== 9) cell.classList.remove('face');
-    pack.appendChild(cell);
+    unit.style.gridRow = String(rows - rowFromBottom);
+    body.appendChild(unit);
   }
-  return pack;
-}
-
-function renderHundred() {
-  const board = document.createElement('div');
-  board.className = 'hundred-board';
-  for (let i = 0; i < 100; i += 1) {
-    const cell = document.createElement('div');
-    cell.className = 'hundred-cell';
-    board.appendChild(cell);
-  }
-  return board;
+  return body;
 }
 
 function renderBlocks(n) {
   stage.innerHTML = '';
   stage.classList.toggle('many', n >= 50);
-
-  if (n === 100) {
-    stage.appendChild(renderHundred());
-    return;
-  }
-
-  const tens = Math.floor(n / 10);
-  const ones = n % 10;
-  if (tens === 0) {
-    stage.appendChild(renderOnes(n, n));
-    return;
-  }
-
-  for (let i = 0; i < tens; i += 1) {
-    stage.appendChild(renderTenPack(tens, i, tens, ones > 0));
-  }
-  if (ones > 0) stage.appendChild(renderOnes(ones, ones));
+  stage.appendChild(renderNumberBody(n));
 }
 
 function renderSlots() {

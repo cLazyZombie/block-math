@@ -17,7 +17,6 @@
   --magenta: #f15ab8;
   --grey: #9aa3b1;
   --block-size: clamp(40px, 8vmin, 74px);
-  --mini-size: clamp(18px, 3vmin, 30px);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -230,25 +229,19 @@ button:focus-visible {
   gap: clamp(0.28rem, 1vmin, 0.55rem);
 }
 
-.number-stack,
-.ones-group {
+.number-body {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: var(--block-size);
-  grid-template-rows: repeat(var(--rows, 4), var(--block-size));
+  grid-template-columns: repeat(var(--body-cols), var(--block-size));
+  grid-template-rows: repeat(var(--body-rows), var(--block-size));
   gap: clamp(4px, 0.8vmin, 7px);
-  align-items: end;
-  transform: translateZ(0);
+  padding: clamp(7px, 1.15vmin, 12px);
+  border: clamp(4px, 0.8vmin, 7px) solid var(--body-border);
+  border-radius: clamp(18px, 3vmin, 34px);
+  background: rgba(255, 253, 246, 0.7);
+  box-shadow: var(--shadow);
 }
 
-.ones-group {
-  grid-template-columns: repeat(var(--cols, 1), var(--block-size));
-  grid-auto-flow: initial;
-  align-self: center;
-}
-
-.unit,
-.hundred-cell {
+.unit {
   position: relative;
   border-radius: 24%;
   background: var(--block-color);
@@ -288,39 +281,6 @@ button:focus-visible {
     radial-gradient(circle at 0 40%, rgba(255, 128, 146, 0.85) 0 22%, transparent 24%),
     radial-gradient(circle at 100% 40%, rgba(255, 128, 146, 0.85) 0 22%, transparent 24%);
 }
-
-.ten-pack {
-  display: grid;
-  grid-template-columns: repeat(2, var(--block-size));
-  grid-template-rows: repeat(5, var(--block-size));
-  gap: clamp(4px, 0.8vmin, 7px);
-  padding: clamp(5px, 0.8vmin, 8px);
-  border-radius: clamp(16px, 2.5vmin, 26px);
-  border: clamp(4px, 0.8vmin, 7px) solid var(--pack-border);
-  background: var(--pack-bg);
-  box-shadow: var(--shadow);
-}
-
-.ten-unit {
-  width: var(--block-size);
-  height: var(--block-size);
-  background: var(--pack-bg);
-}
-
-.hundred-board {
-  display: grid;
-  grid-template-columns: repeat(10, var(--mini-size));
-  grid-template-rows: repeat(10, var(--mini-size));
-  gap: max(2px, calc(var(--mini-size) * 0.1));
-  padding: max(8px, calc(var(--mini-size) * 0.34));
-  border-radius: 22px;
-  border: max(4px, calc(var(--mini-size) * 0.2)) solid var(--red);
-  background: #fff7f4;
-  box-shadow: var(--shadow);
-}
-
-.hundred-cell:nth-child(2n) { background: #ffd9d9; }
-.hundred-cell:nth-child(2n + 1) { background: #fff; }
 
 .answer-slots {
   display: flex;
@@ -490,7 +450,6 @@ button:focus-visible {
 @media (max-width: 620px) {
   :root {
     --block-size: clamp(28px, 9.2vw, 46px);
-    --mini-size: clamp(10px, 3vw, 16px);
   }
 
   .title-bg {

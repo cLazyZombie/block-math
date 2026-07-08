@@ -2,7 +2,7 @@
 
 ## Goal
 
-Build a static preschool number-recognition game inspired by colorful block-number learning. The child sees a stack of blocks representing a random number from 1 to 100, then drags reusable digit tiles into matching blanks.
+Build a static preschool number-recognition game inspired by colorful block-number learning. The child sees one connected block body representing a random number from 1 to 100, then drags reusable digit tiles into matching blanks.
 
 ## Scope
 
@@ -40,8 +40,7 @@ Run with an HTTP server because static audio and JSON are fetched. Verify:
 
 - First screen renders with the generated background.
 - Desktop and mobile layouts fit without overlap.
-- Blocks render for small numbers, two-digit numbers, and `100`.
-- Ten-block groups use full block cells rather than miniature cells.
+- Blocks render as one connected body for small numbers, two-digit numbers, and `100`.
 - Reusable digit tiles allow repeated digits.
 - Wrong drops do not fill slots.
 - Correct answer waits 1 second, then triggers praise, confetti, and audio.
