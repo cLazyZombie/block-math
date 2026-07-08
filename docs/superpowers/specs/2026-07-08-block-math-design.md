@@ -17,10 +17,10 @@ Build a static preschool number-recognition game inspired by colorful block-numb
 ## Interaction
 
 1. The child taps the first screen start button.
-2. A random number appears as grouped blocks:
-   - `1` to `9`: individual colored block stacks.
-   - `10` to `99`: tens shown as 10-block packs, ones shown as individual blocks.
-   - `100`: one 10-by-10 hundred board.
+2. A random number appears as one connected block body:
+   - `1` to `9`: one vertical colored block stack.
+   - `10` to `99`: each full ten is a touching vertical 10-block column, with remaining ones attached from the bottom of the next column.
+   - `100`: one touching 10-by-10 hundred body.
 3. The child drags digit tiles into blank slots. Tiles do not disappear, so repeated digits work.
 4. A slot accepts only its matching digit. Wrong drops shake and do not fill the slot.
 5. Blank slots can be tapped to clear from that position.

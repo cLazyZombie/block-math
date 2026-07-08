@@ -151,24 +151,15 @@ function speak(text) {
   });
 }
 
-function makeUnit(color, index, total) {
+function makeUnit(color) {
   const unit = document.createElement('div');
   unit.className = 'unit';
   unit.style.setProperty('--block-color', color);
-  if (index === total - 1) unit.classList.add('face');
   return unit;
 }
 
 function bodyColumns(count) {
-  if (count <= 3) return 1;
-  if (count <= 6) return 2;
-  if (count <= 12) return 3;
-  if (count <= 20) return 4;
-  if (count <= 30) return 5;
-  if (count <= 42) return 7;
-  if (count <= 56) return 8;
-  if (count <= 72) return 9;
-  return 10;
+  return Math.ceil(count / 10);
 }
 
 function cellColorFor(index, count) {
@@ -187,30 +178,73 @@ function cellColorFor(index, count) {
   return tens === 1 ? '#fffdf8' : digitColors[tens].soft;
 }
 
+function cellLineFor(index, count) {
+  if (count === 100) return digitColors[1].border;
+  if (count < 10) return digitColors[count].border;
+
+  const tens = Math.floor(count / 10);
+  const ones = count % 10;
+  if (ones > 0 && index >= count - ones) return digitColors[ones].border;
+  return digitColors[tens].border;
+}
+
+function cellPosition(index, rows) {
+  const col = Math.floor(index / 10);
+  const rowFromBottom = index % 10;
+  return { col, row: rows - rowFromBottom };
+}
+
+function addBodyCorners(unit, col, row, occupied) {
+  const has = (x, y) => occupied.has(`${x},${y}`);
+  const above = has(col, row - 1);
+  const below = has(col, row + 1);
+  const left = has(col - 1, row);
+  const right = has(col + 1, row);
+  if (!above && !left) unit.classList.add('corner-tl');
+  if (!above && !right) unit.classList.add('corner-tr');
+  if (!below && !left) unit.classList.add('corner-bl');
+  if (!below && !right) unit.classList.add('corner-br');
+}
+
 function renderNumberBody(count) {
   const cols = bodyColumns(count);
-  const rows = Math.ceil(count / cols);
+  const rows = Math.min(10, count);
+  const faceCols = count >= 10 ? Math.floor(count / 10) : 1;
   const edgeDigit = count === 100 ? 1 : (count % 10 || Math.floor(count / 10) || count);
+  const occupied = new Set();
   const body = document.createElement('div');
   body.className = 'number-body';
   body.style.setProperty('--body-cols', String(cols));
   body.style.setProperty('--body-rows', String(rows));
+  body.style.setProperty('--face-cols', String(faceCols));
   body.style.setProperty('--body-border', digitColors[edgeDigit].border);
 
   for (let i = 0; i < count; i += 1) {
-    const unit = makeUnit(cellColorFor(i, count), i, count);
+    const { col, row } = cellPosition(i, rows);
+    occupied.add(`${col},${row}`);
+  }
+
+  for (let i = 0; i < count; i += 1) {
+    const unit = makeUnit(cellColorFor(i, count));
+    const { col, row } = cellPosition(i, rows);
     unit.classList.add('body-unit');
-    const rowFromBottom = Math.floor(i / cols);
-    const col = i % cols;
+    unit.style.setProperty('--cell-line', cellLineFor(i, count));
     unit.style.gridColumn = String(col + 1);
-    unit.style.gridRow = String(rows - rowFromBottom);
+    unit.style.gridRow = String(row);
+    addBodyCorners(unit, col, row, occupied);
     body.appendChild(unit);
   }
+
+  const face = document.createElement('div');
+  face.className = 'body-face';
+  face.innerHTML = '<span class="face-eye"></span><span class="face-eye"></span><span class="face-mouth"></span>';
+  body.appendChild(face);
   return body;
 }
 
 function renderBlocks(n) {
   stage.innerHTML = '';
+  stage.classList.toggle('tall', n >= 10);
   stage.classList.toggle('many', n >= 50);
   stage.appendChild(renderNumberBody(n));
 }
