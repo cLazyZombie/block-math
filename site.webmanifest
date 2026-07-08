@@ -1,0 +1,24 @@
+{
+  "name": "Block Math Playground",
+  "short_name": "Block Math",
+  "description": "A colorful number block game for young Korean learners.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff5d8",
+  "theme_color": "#fff5d8",
+  "icons": [
+    {
+      "src": "images/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
